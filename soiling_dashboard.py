@@ -225,8 +225,8 @@ def main():
     # Apply Financial calculations
     final_df = apply_financial_model(station_df, capacity_mw, yield_kwh, tariff, cleaning_cost)
     
-    # --- TABS: DASHBOARD vs DATA ---
-    tab_dash, tab_data = st.tabs(["📊 Dashboard", "🗄️ Dataset View"])
+    # --- TABS: DASHBOARD vs DATA vs METHODOLOGY ---
+    tab_dash, tab_data, tab_meth = st.tabs(["📊 Dashboard", "🗄️ Dataset View", "📖 Methodology"])
     
     with tab_dash:
         # --- KPIs ---
@@ -345,6 +345,56 @@ def main():
             }),
             use_container_width=True
         )
+
+    with tab_meth:
+        st.subheader("Methodology: Dynamic Soiling Economic Optimization Model")
+        
+        st.markdown("""
+        ### 1. Data Preprocessing & Soiling Ratio (SR) Extraction
+        
+        The model depends on precise measurements of the short-circuit current from standard and soiled test panels. 
+        Measurements are captured at high frequency (1-minute intervals) and aggressively filtered to avoid electrical anomalies:
+        
+        $$ I_{SC, \\text{clean}} \ge 5\\text{ mA} $$
+        
+        The baseline **Soiling Ratio (SR)** represents the exact efficiency degradation of the panel due purely to 
+        environmental dust accumulation:
+        
+        $$ SR_{t} = \min\\left(1.0, \, \\frac{I_{SC, \\text{soil}, t}}{I_{SC, \\text{clean}, t}} \\right) $$
+        
+        This metric is mapped to daily values by taking the mean across the daylight window.
+
+        ---
+
+        ### 2. Financial Modeling 
+        
+        Rather than cleaning panels on a rigid time-schedule, our algorithm continuously quantifies the financial 
+        value of lost production volume, accumulating it day over day.
+        
+        First, we calculate the absolute limit of revenue potential on a pristine day:
+        $$ R_{\\text{Max Potential}} = \\text{Capacity (MW)} \\times \\text{Expected Yield (kWh/MW)} \\times \\text{PPA Tariff } (\$/\\text{kWh}) $$
+        
+        Next, we extract the precise amount of money lost per day factoring in the fractional optical loss ($1 - SR_t$):
+        $$ \\text{Daily Loss}_t = (1 - SR_t) \\times R_{\\text{Max Potential}} $$
+        
+        We then maintain a persistent rolling ledger (the **Cumulative Loss** axis), integrating the daily loss values mathematically:
+        $$ \\text{Cumulative Loss}_{T} = \sum_{t=0}^{T} \\text{Daily Loss}_t $$
+
+        ---
+
+        ### 3. Cleaning Trigger Logic & Resets
+        
+        The area chart dynamically stops mounting and completely zeros out ($ \\text{Cumulative Loss}_T \leftarrow 0 $) 
+        under exactly two distinct conditions:
+        
+        **A. Natural Rain Events ($ \\text{Rain} > 0\\text{ mm}$):** The atmosphere washes the panels for free, 
+        spiking SR back toward 1.0 organically.
+        
+        **B. Manual Cleaning Threshold Breached ($ \\text{Cumulative Loss}_T \ge \\text{Cost}_{\\text{Clean}}$):** When the accumulated
+        lost revenue mathematically eclipses the fixed overhead cost of dispatching a crew to physically clean the array. 
+        
+        Hitting this algorithmic intersection marks the **optimal financial inflection point**.
+        """)
 
 if __name__ == "__main__":
     main()
