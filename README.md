@@ -387,3 +387,9 @@ Near-term focus should prioritize:
 - **Approver:** Renewables Department (Project Proponent)
 - **Contributors:** Sensor Contractor, Reporting Contractor
 - **Version:** 1.0 (initial detailed planning baseline)
+
+## Dated Delivery Plan (Q2 2026)
+A date-bound execution plan with responsibilities and handover conditions is available at:
+- `docs/DELIVERY_PLAN_Q2_2026.md`
+
+This plan is contractor-led through Q2 2026 (sensor and data/reporting contractors), with Analytics Team takeover at the final handover stage once all acceptance criteria are met.
