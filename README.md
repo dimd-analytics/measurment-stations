@@ -1,4 +1,4 @@
-# measurment-stations
+# soiling-data program
 
 ## Purpose
 This repository is the working foundation for a **bankable soiling-data program** that supports cleaning optimization and financial decision-making for utility-scale solar assets.
